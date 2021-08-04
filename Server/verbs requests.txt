@@ -1,0 +1,41 @@
+post request:
+http://localhost:3000/api/cinema/users/login
+{
+    "username" : "admin",
+    "password" : "admin"
+}
+
+get request:
+http://localhost:3000/api/cinema/users
+
+update/insert request:
+{
+        "UserName": "talor115",
+        "Password": "1234567",
+        "FirstName": "Talor2",
+        "LastName": "Samara2",
+        "CreatedDate": "2021-04-13",
+        "SessionTimeOut": 18,
+        "Role": "user",
+        "Permissions": [
+            "Delete Movies",
+            "View Movies"
+        ]
+}
+
+get request:
+http://localhost:3000/api/cinema/members
+
+
+JWT with Axios
+exports.getMembers = async function(token)
+{
+    const resp = await axios.get(url, {
+        headers: {
+            'x-access-token': token,
+            'Accept' : 'application/json',
+            'Content-Type': 'application/json'
+        }
+    }).catch((err) => {return err;});
+    return resp.data;
+}

@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "Id": "60b627afc30aab77380b1828",
+      "FirstName": "Talor",
+      "LastName": "Samara",
+      "CreatedDate": "16.06.2021",
+      "SessionTimeOut": 5,
+      "Role": "admin"
+    },
+    {
+      "Id": "60d0655b318e3989f077431d",
+      "FirstName": "Tss",
+      "LastName": "SSA",
+      "CreatedDate": "21.6.2021",
+      "SessionTimeOut": 11,
+      "Role": "user"
+    }
+  ]
+}
