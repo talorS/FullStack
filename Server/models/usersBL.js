@@ -86,8 +86,8 @@ exports.addUser = async function (obj) {
     await dalWrite.writeDataToFile(usersFile, { usrJson })
         .catch(err => { return err; });
 
-    rusrPermJson.push(usrPermObj);
-    await dalWrite.writeDataToFile(usersPermFile, { rusrPermJson })
+    usrPermJson.push(usrPermObj);
+    await dalWrite.writeDataToFile(usersPermFile, { usrPermJson })
         .catch(err => { return err; });
 
     return '200';
