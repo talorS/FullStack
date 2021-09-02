@@ -8,6 +8,22 @@ const bcrypt = require("bcrypt");
 const accessTokenSecret = require('../configs/secret');
 const jwt = require("jsonwebtoken");
 
+let usrJson = [];
+let usrPermJson = [];
+
+initData();
+
+async function initData() {
+    try {
+        usrJson = await dalRead.readDataFromFile(usersFile);
+        usrJson = usrJson.users;
+        usrPermJson = await dalRead.readDataFromFile(usersPermFile);
+        usrPermJson = usrPermJson.permissions;
+    } catch (err) {
+        console.log(err.message);
+    }
+}
+
 exports.getUsers = async function () {
     let users = await dalDB.getUsers().catch(err => { return err; });
     return Promise.all(users.map(user => getUserData(user).catch(err => console.log(err))));
@@ -22,17 +38,10 @@ exports.getUser = async function (id) {
 }
 
 async function getUserData(user) {
-    let usrJson = await dalRead.readDataFromFile(usersFile)
-        .catch(err => { return err; });
-    usrJson = usrJson.users;
-    let usrPermJson = await dalRead.readDataFromFile(usersPermFile)
-        .catch(err => { return err; });
-    usrPermJson = usrPermJson.permissions;
     const usrDetails = usrJson.find(x => x.Id === user._id.toString());
     const usrPerm = usrPermJson.find(x => x.Id === user._id.toString());
-    const userData = Object.fromEntries(Object.entries(Object.assign({}, user._doc, usrDetails, usrPerm))
+    return Object.fromEntries(Object.entries(Object.assign({}, user._doc, usrDetails, usrPerm))
         .filter((([key, value]) => key !== 'Id')));
-    return userData;
 }
 
 exports.validateCredentials = async function (usr, pwd) {
@@ -59,7 +68,7 @@ exports.addUser = async function (obj) {
     };
     const id = await dalDB.addUser(obj).catch(err => { return err; });
 
-    usrJson = {
+    const usrObj = {
         Id: id.toString(),
         FirstName: obj.FirstName,
         LastName: obj.LastName,
@@ -67,23 +76,18 @@ exports.addUser = async function (obj) {
         SessionTimeOut: obj.SessionTimeOut,
         Role: obj.Role
     };
-    usrPermJson = {
+
+    const usrPermObj = {
         Id: id.toString(),
         Permissions: obj.Permissions
     };
 
-    let resp = await dalRead.readDataFromFile(usersFile)
-        .catch(err => { return err; });
-    let users = resp.users;
-    users.push(usrJson);
-    await dalWrite.writeDataToFile(usersFile, { users })
+    usrJson.push(usrObj);
+    await dalWrite.writeDataToFile(usersFile, { usrJson })
         .catch(err => { return err; });
 
-    resp = await dalRead.readDataFromFile(usersPermFile)
-        .catch(err => { return err; });
-    let permissions = resp.permissions;
-    permissions.push(usrPermJson);
-    await dalWrite.writeDataToFile(usersPermFile, { permissions })
+    rusrPermJson.push(usrPermObj);
+    await dalWrite.writeDataToFile(usersPermFile, { rusrPermJson })
         .catch(err => { return err; });
 
     return '200';
@@ -95,7 +99,7 @@ exports.updateUser = async function (id, obj) {
     };
     const status = await dalDB.updateUser(id, usrDB).catch(err => { return err; });
 
-    usrJson = {
+    const usrObj = {
         Id: id,
         FirstName: obj.FirstName,
         LastName: obj.LastName,
@@ -103,28 +107,22 @@ exports.updateUser = async function (id, obj) {
         SessionTimeOut: obj.SessionTimeOut,
         Role: obj.Role
     };
-    usrPermJson = {
+    const usrPermObj = {
         Id: id,
         Permissions: obj.Permissions
     };
 
-    resp = await dalRead.readDataFromFile(usersFile)
-        .catch(err => { return err; });
-    const users = resp.users;
-    let usrIndex = users.findIndex(obj => obj.Id === id);
+    let usrIndex = usrJson.findIndex(obj => obj.Id === id);
     if (usrIndex > -1) {
-        users[usrIndex] = usrJson;
-        await dalWrite.writeDataToFile(usersFile, { users })
+        usrJson[usrIndex] = usrObj;
+        await dalWrite.writeDataToFile(usersFile, { usrJson })
             .catch(err => { return err; });
     }
 
-    resp = await dalRead.readDataFromFile(usersPermFile)
-        .catch(err => { return err; });
-    const permissions = resp.permissions;
-    usrIndex = permissions.findIndex(obj => obj.Id === id);
+    usrIndex = usrPermJson.findIndex(obj => obj.Id === id);
     if (usrIndex > -1) {
-        permissions[usrIndex] = usrPermJson;
-        await dalWrite.writeDataToFile(usersPermFile, { permissions })
+        usrPermJson[usrIndex] = usrPermObj;
+        await dalWrite.writeDataToFile(usersPermFile, { usrPermJson })
             .catch(err => { return err; });
     }
     return status;
@@ -133,23 +131,17 @@ exports.updateUser = async function (id, obj) {
 exports.deleteUser = async function (id) {
     const status = await dalDB.deleteUser(id).catch(err => { return err; });
 
-    let resp = await dalRead.readDataFromFile(usersFile)
-        .catch(error => { return error; });
-    const users = resp.users;
-    let ind = users.findIndex(obj => obj.Id === id);
+    let ind = usrJson.findIndex(obj => obj.Id === id);
     if (ind > -1) {
-        users.splice(ind, 1);
-        await dalWrite.writeDataToFile(usersFile, { users })
+        usrJson.splice(ind, 1);
+        await dalWrite.writeDataToFile(usersFile, { usrJson })
             .catch(error => { return error; });
     }
 
-    resp = await dalRead.readDataFromFile(usersPermFile)
-        .catch(error => { return error; });
-    const permissions = resp.permissions;
-    ind = permissions.findIndex(obj => obj.Id === id);
+    ind = usrPermJson.findIndex(obj => obj.Id === id);
     if (ind > -1) {
-        permissions.splice(ind, 1);
-        await dalWrite.writeDataToFile(usersPermFile, { permissions })
+        usrPermJson.splice(ind, 1);
+        await dalWrite.writeDataToFile(usersPermFile, { usrPermJson })
             .catch(error => { return error; });
     }
 
