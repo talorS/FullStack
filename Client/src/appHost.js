@@ -23,7 +23,7 @@ class HostComp extends Component {
           <Route path='/LogoutPage' component={LogoutComp} />
           <Route path='/NewUserPage' component={NewUserComp} />
           <Route path='/MainPage' render={(props) => (
-            !authSrv.USER_AUTH.get().token? (
+            !authSrv.USER_AUTH.get()?.token? (
               <Redirect to="/" />
             ) : (
               <DashboardComp {...props}/>

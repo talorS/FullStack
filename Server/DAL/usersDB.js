@@ -36,11 +36,11 @@ exports.getUser = function(id)
     });
 }
 
-exports.validateCredentials = function(usr,pwd)
+exports.validateCredentials = function(usr)
 {
     return new Promise((resolve, reject) =>
     {
-        usersModel.findOne({UserName : usr, Password: pwd}, function(err, user)
+        usersModel.findOne({UserName : usr}, function(err, user)
         {
             if(err)
             {

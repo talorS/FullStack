@@ -18,6 +18,13 @@
       "Permissions": [
         "View Subscriptions"
       ]
+    },
+    {
+      "Id": "613090018d613306e58fb63d",
+      "Permissions": [
+        "View Subscriptions",
+        "Create Subscriptions"
+      ]
     }
   ]
 }

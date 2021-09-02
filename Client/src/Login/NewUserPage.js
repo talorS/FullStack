@@ -26,10 +26,10 @@ class NewAccComp extends Component {
   createNewUser = async (e) =>
   {
     e.preventDefault();
-    debugger;
     let resp = await authSrv.validateUser(this.state.userName);
     //user exist in db and first time register (empty password)
     if(resp.status === 200){
+      console.log(resp.data);
       await authSrv.register(resp.data, this.state.password);
       this.props.history.push('/');
     } 

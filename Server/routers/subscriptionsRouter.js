@@ -1,7 +1,5 @@
 const express = require('express');
-
 const router = express.Router();
-
 const subscriptionBL = require('../models/subscriptionsBL');
 
 //Get all requests

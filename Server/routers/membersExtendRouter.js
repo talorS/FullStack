@@ -1,27 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const memberBL = require('../models/membersExtendBL');
-const jwt = require('jsonwebtoken');
-const accessTokenSecret = require('../configs/secret');
-
-const authenticateJWT = (req, res, next) => {
-    const token = req.headers['x-access-token'];
-    if (token) {
-        jwt.verify(token, accessTokenSecret, (err, user) => {
-            if (err) {
-                return res.sendStatus(403);
-            }
-            req.user = user.data;//for authorization (role access)
-            next();
-        });
-    } else {
-        res.sendStatus(401);
-    }
-};
+const auth = require("../middleware/authJWT");
 
 //Get all requests
 router.route('/')
-    .get(authenticateJWT, async function (req, res) {
+    .get(auth, async function (req, res) {
         const members = await memberBL.getMembers();
         if(members)
             res.status(200).send(members.data)
@@ -30,7 +14,7 @@ router.route('/')
 
 //Get a member (Get By ID request )
 router.route('/:id')
-    .get(authenticateJWT,async function (req, res) {
+    .get(auth,async function (req, res) {
         const id = req.params.id;
         const member = await memberBL.getMember(id);
         return res.json(member.data)
@@ -38,7 +22,7 @@ router.route('/:id')
 
 //Get POST(insert) request 
 router.route('/')
-    .post(authenticateJWT,async function (req, res) {
+    .post(auth,async function (req, res) {
         const obj = req.body;
         const resp = await memberBL.addMember(obj);
         return res.json(resp.data)
@@ -46,7 +30,7 @@ router.route('/')
 
 //Get PUT(update) request 
 router.route('/:id')
-    .put(authenticateJWT,async function (req, res) {
+    .put(auth,async function (req, res) {
         const obj = req.body;
         const id = req.params.id;
         const resp = await memberBL.updateMember(id, obj);
@@ -55,7 +39,7 @@ router.route('/:id')
 
 //Get Delete request 
 router.route('/:id')
-    .delete(authenticateJWT,async function (req, res) {
+    .delete(auth,async function (req, res) {
         const id = req.params.id;
         const resp = await memberBL.deleteMember(id);
         return res.json(resp.data);

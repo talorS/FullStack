@@ -4,61 +4,58 @@ const dalWrite = require('../DAL/fileWriter');
 var path = require('path');
 const usersFile = path.join(__dirname, '..', 'jsonData', 'Users.json');
 const usersPermFile = path.join(__dirname, '..', 'jsonData', 'Permissions.json');
+const bcrypt = require("bcrypt");
+const accessTokenSecret = require('../configs/secret');
+const jwt = require("jsonwebtoken");
 
 exports.getUsers = async function () {
+    let users = await dalDB.getUsers().catch(err => { return err; });
+    return Promise.all(users.map(user => getUserData(user).catch(err => console.log(err))));
+}
+
+exports.getUser = async function (id) {
+    let user = await dalDB.getUser(id).catch(err => { return err; });
+    if (user) {
+        user = await getUserData(user).catch(err => console.log(err));
+    }
+    return user;
+}
+
+async function getUserData(user) {
     let usrJson = await dalRead.readDataFromFile(usersFile)
         .catch(err => { return err; });
     usrJson = usrJson.users;
     let usrPermJson = await dalRead.readDataFromFile(usersPermFile)
         .catch(err => { return err; });
     usrPermJson = usrPermJson.permissions;
-    let users = await dalDB.getUsers().catch(err => { return err; });
-    users = users.map(user => {
-        const usrDetails = usrJson.find(x => x.Id === user._id.toString());
-        const usrPerm = usrPermJson.find(x => x.Id === user._id.toString());
-        return Object.fromEntries(Object.entries(Object.assign({}, user._doc, usrDetails, usrPerm))
-            .filter((([key, value]) => key !== 'Id')));
-    });
-    return users;
-}
-
-exports.getUser = async function (id) {
-    let user = await dalDB.getUser(id).catch(err => { return err; });
-    if (user) {
-        let usrJson = await dalRead.readDataFromFile(usersFile)
-            .catch(err => { return err; });
-        usrJson = usrJson.users;
-        let usrPermJson = await dalRead.readDataFromFile(usersPermFile)
-            .catch(err => { return err; });
-        usrPermJson = usrPermJson.permissions;
-        const usrDetails = usrJson.find(x => x.Id === user._id.toString());
-        const usrPerm = usrPermJson.find(x => x.Id === user._id.toString());
-        user = Object.fromEntries(Object.entries(Object.assign({}, user._doc, usrDetails, usrPerm))
-            .filter((([key, value]) => key !== 'Id')));
-    }
-    return user;
+    const usrDetails = usrJson.find(x => x.Id === user._id.toString());
+    const usrPerm = usrPermJson.find(x => x.Id === user._id.toString());
+    const userData = Object.fromEntries(Object.entries(Object.assign({}, user._doc, usrDetails, usrPerm))
+        .filter((([key, value]) => key !== 'Id')));
+    return userData;
 }
 
 exports.validateCredentials = async function (usr, pwd) {
-    let user = await dalDB.validateCredentials(usr, pwd).catch(err => { return err; });
+    let user = await dalDB.validateCredentials(usr).catch(err => { return err; });
     if (user) {
-        let usrJson = await dalRead.readDataFromFile(usersFile)
-            .catch(err => { return err; });
-        usrJson = usrJson.users;
-        const usrDetails = usrJson.find(x => x.Id === user._id.toString());
-        let usrPermJson = await dalRead.readDataFromFile(usersPermFile)
-            .catch(err => { return err; });
-        usrPermJson = usrPermJson.permissions;
-        const usrPerm = usrPermJson.find(x => x.Id === user._id.toString());
-        user = Object.fromEntries(Object.entries(Object.assign({}, user._doc, usrDetails, usrPerm))
-            .filter((([key, value]) => key !== 'Id')));
+        const password = pwd.toString();
+        const validPassword = await bcrypt.compare(password, user.Password).catch(err => console.log(err));
+        if (!validPassword)
+            return null;
+        user = await getUserData(user).catch(err => console.log(err));
+        const accessToken = jwt.sign({ data: user },
+            accessTokenSecret,
+            { expiresIn: '2h' }
+        );
+        return { user, accessToken };
     }
     return user;
 }
 
 exports.addUser = async function (obj) {
     usrDB = {
-        UserName: obj.UserName
+        UserName: obj.UserName,
+        Password: ''
     };
     const id = await dalDB.addUser(obj).catch(err => { return err; });
 
@@ -164,5 +161,8 @@ exports.validateUserNameExist = async function (usrname) {
 }
 
 exports.register = async function (id, pwd) {
-    return await dalDB.register(id, pwd).catch(err => { return err; });
+    const password = pwd.toString();
+    const salt = await bcrypt.genSalt(10).catch(err => console.log(err));
+    const hashedPassword = await bcrypt.hash(password, salt).catch(err => console.log(err));
+    return await dalDB.register(id, hashedPassword).catch(err => { return err; });
 }
