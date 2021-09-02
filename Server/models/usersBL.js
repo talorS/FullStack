@@ -83,11 +83,11 @@ exports.addUser = async function (obj) {
     };
 
     usrJson.push(usrObj);
-    await dalWrite.writeDataToFile(usersFile, { usrJson })
+    await dalWrite.writeDataToFile(usersFile, { users : usrJson })
         .catch(err => { return err; });
 
     usrPermJson.push(usrPermObj);
-    await dalWrite.writeDataToFile(usersPermFile, { usrPermJson })
+    await dalWrite.writeDataToFile(usersPermFile, { permissions : usrPermJson })
         .catch(err => { return err; });
 
     return '200';
@@ -115,14 +115,14 @@ exports.updateUser = async function (id, obj) {
     let usrIndex = usrJson.findIndex(obj => obj.Id === id);
     if (usrIndex > -1) {
         usrJson[usrIndex] = usrObj;
-        await dalWrite.writeDataToFile(usersFile, { usrJson })
+        await dalWrite.writeDataToFile(usersFile, { users : usrJson })
             .catch(err => { return err; });
     }
 
     usrIndex = usrPermJson.findIndex(obj => obj.Id === id);
     if (usrIndex > -1) {
         usrPermJson[usrIndex] = usrPermObj;
-        await dalWrite.writeDataToFile(usersPermFile, { usrPermJson })
+        await dalWrite.writeDataToFile(usersPermFile, { permissions : usrPermJson })
             .catch(err => { return err; });
     }
     return status;
@@ -134,14 +134,14 @@ exports.deleteUser = async function (id) {
     let ind = usrJson.findIndex(obj => obj.Id === id);
     if (ind > -1) {
         usrJson.splice(ind, 1);
-        await dalWrite.writeDataToFile(usersFile, { usrJson })
+        await dalWrite.writeDataToFile(usersFile, { users : usrJson })
             .catch(error => { return error; });
     }
 
     ind = usrPermJson.findIndex(obj => obj.Id === id);
     if (ind > -1) {
         usrPermJson.splice(ind, 1);
-        await dalWrite.writeDataToFile(usersPermFile, { usrPermJson })
+        await dalWrite.writeDataToFile(usersPermFile, { permissions : usrPermJson })
             .catch(error => { return error; });
     }
 

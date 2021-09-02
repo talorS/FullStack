@@ -1,5 +1,5 @@
 {
-  "usrJson": [
+  "users": [
     {
       "Id": "60b627afc30aab77380b1828",
       "FirstName": "Talori",
@@ -7,22 +7,6 @@
       "CreatedDate": "16.06.2021",
       "SessionTimeOut": 5,
       "Role": "admin"
-    },
-    {
-      "Id": "60d0655b318e3989f077431d",
-      "FirstName": "Tss",
-      "LastName": "SSA",
-      "CreatedDate": "21.6.2021",
-      "SessionTimeOut": 11,
-      "Role": "user"
-    },
-    {
-      "Id": "6130b8cf880842fa84725416",
-      "FirstName": "rointds",
-      "LastName": "dsd",
-      "CreatedDate": "2.9.2021",
-      "SessionTimeOut": 1111,
-      "Role": "user"
     }
   ]
 }
