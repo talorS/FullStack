@@ -26,18 +26,18 @@ async function initData() {
 
 exports.getUsers = async function () {
     let users = await dalDB.getUsers().catch(err => { return err; });
-    return Promise.all(users.map(user => getUserData(user).catch(err => console.log(err))));
+    return users.map(user => getUserData(user));
 }
 
 exports.getUser = async function (id) {
     let user = await dalDB.getUser(id).catch(err => { return err; });
     if (user) {
-        user = await getUserData(user).catch(err => console.log(err));
+        user = getUserData(user);
     }
     return user;
 }
 
-async function getUserData(user) {
+function getUserData(user) {
     const usrDetails = usrJson.find(x => x.Id === user._id.toString());
     const usrPerm = usrPermJson.find(x => x.Id === user._id.toString());
     return Object.fromEntries(Object.entries(Object.assign({}, user._doc, usrDetails, usrPerm))
@@ -51,7 +51,7 @@ exports.validateCredentials = async function (usr, pwd) {
         const validPassword = await bcrypt.compare(password, user.Password).catch(err => console.log(err));
         if (!validPassword)
             return null;
-        user = await getUserData(user).catch(err => console.log(err));
+        user = getUserData(user);
         const accessToken = jwt.sign({ data: user },
             accessTokenSecret,
             { expiresIn: '2h' }
